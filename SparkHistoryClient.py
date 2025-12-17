@@ -141,48 +141,48 @@ class SparkHistoryClient:
       return allAppMetadata
 
     def buildMetadataDf(self, allAppMetadata):
-      """Method to flatten and create a pandas df with all filtered metadata from all apps"""
+        """Method to flatten and create a pandas df with all filtered metadata from all apps"""
 
-      # Build flat rows
-      flattened_rows = []
+        # Build flat rows
+        flattened_rows = []
 
-      for app_id, content in allAppMetadata.items():
-        row = {'app_id': app_id}
+        for app_id, content in allAppMetadata.items():
+            row = {'app_id': app_id}
 
-        # Flatten sparkProperties (key-value pairs)
-        for key, value in content.get('sparkProperties', []):
-            row[key] = value
+            # Flatten sparkProperties (key-value pairs)
+            for key, value in content.get('sparkProperties', []):
+                row[key] = value
 
-        # Process each resource profile
-        for profile in content.get('resourceProfiles', []):
-            for section, resources in profile.items():
-                if isinstance(resources, dict):
-                    for res_key, res_val in resources.items():
-                        if isinstance(res_val, dict):
-                            resource_name = res_val.get('resourceName')
-                            amount = res_val.get('amount')
-                            if resource_name is not None and amount is not None:
-                                # Build column name based on the section (e.g. executor_memory)
-                                col_name = f"{section.rstrip('Resources')}_{resource_name}"
+            # Process each resource profile
+            for profile in content.get('resourceProfiles', []):
+                for section, resources in profile.items():
+                    if isinstance(resources, dict):
+                        for res_key, res_val in resources.items():
+                            if isinstance(res_val, dict):
+                                resource_name = res_val.get('resourceName')
+                                amount = res_val.get('amount')
+                                if resource_name is not None and amount is not None:
+                                    # Build column name based on the section (e.g. executor_memory)
+                                    col_name = f"{section.rstrip('Resources')}_{resource_name}"
 
-                                if col_name not in row:
-                                    row[col_name] = amount
-                                else:
-                                    # Handle multiple values
-                                    existing = row[col_name]
-                                    try:
-                                        row[col_name] = float(existing) + float(amount)
-                                    except (ValueError, TypeError):
-                                        if not isinstance(existing, list):
-                                            row[col_name] = [existing]
-                                        row[col_name].append(amount)
+                                    if col_name not in row:
+                                        row[col_name] = amount
+                                    else:
+                                        # Handle multiple values
+                                        existing = row[col_name]
+                                        try:
+                                            row[col_name] = float(existing) + float(amount)
+                                        except (ValueError, TypeError):
+                                            if not isinstance(existing, list):
+                                                row[col_name] = [existing]
+                                            row[col_name].append(amount)
 
-          flattened_rows.append(row)
+            flattened_rows.append(row)
 
-      # Create DataFrame
-      df = pd.DataFrame(flattened_rows)
+        # Create DataFrame
+        df = pd.DataFrame(flattened_rows)
 
-      df = df.drop("id", axis=1)
+        df = df.drop("id", axis=1)
 
-      # Return result
-      return df
+        # Return result
+        return df
