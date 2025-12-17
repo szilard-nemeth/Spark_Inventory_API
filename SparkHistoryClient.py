@@ -188,7 +188,8 @@ class SparkHistoryClient:
         # Create DataFrame
         df = pd.DataFrame(flattened_rows)
 
-        df = df.drop("id", axis=1)
+        # Use errors='ignore' to prevent KeyError if "id" isn't in the columns
+        df = df.drop("id", axis=1, errors='ignore')
 
         # Return result
         return df
