@@ -63,28 +63,36 @@ def main():
             # Extract the actual attemptId from the metadata
             # IMPORTANT: Do not default to "1" or an index if it's missing
             actual_attempt_id = attempt.get('attemptId')
+            _print_env_info(client, appId, actual_attempt_id)
 
-            if actual_attempt_id:
-                print(f"Spark Attempt ID: {actual_attempt_id}")
-                env_info = client.get_environment(appId, actual_attempt_id)
-            else:
-                print("No specific Attempt ID found (using base application environment)")
-                # If your SparkHistoryClient.py allows it, pass None or handle the path change
-                # Most clients need a slight adjustment to handle the missing ID
-                env_info = client.get_environment(appId, None)
+        _print_app_metadata(apps, client)
 
-            spark_props = env_info.get("sparkProperties", [])
-            for key, value in spark_props:
-                print(f"{key}: {value}")
 
-        # Get raw metadata for each spark app
-        allAppsMetadata = client.getAllAppMetadata(apps)
+def _print_env_info(client: SparkHistoryClient, appId, attempt_id):
+    if attempt_id:
+        print(f"Spark Attempt ID: {attempt_id}")
+        env_info = client.get_environment(appId, attempt_id)
+    else:
+        print("No specific Attempt ID found (using base application environment)")
+        # If your SparkHistoryClient.py allows it, pass None or handle the path change
+        # Most clients need a slight adjustment to handle the missing ID
+        env_info = client.get_environment(appId, None)
 
-        # Create Pandas DF from raw app metadata
-        metadataDf = client.buildMetadataDf(allAppsMetadata)
+    spark_props = env_info.get("sparkProperties", [])
+    for key, value in spark_props:
+        print(f"{key}: {value}")
 
-        # Show Pandas DF
-        print(metadataDf)
+
+def _print_app_metadata(apps: list[dict], client: SparkHistoryClient):
+    # Get raw metadata for each spark app
+    allAppsMetadata = client.getAllAppMetadata(apps)
+
+    # Create Pandas DF from raw app metadata
+    metadataDf = client.buildMetadataDf(allAppsMetadata)
+
+    # Show Pandas DF
+    print(metadataDf)
+
 
 if __name__ == '__main__':
     main()
