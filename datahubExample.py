@@ -74,3 +74,12 @@ for app in apps:
         spark_props = env_info.get("sparkProperties", [])
         for key, value in spark_props:
             print(f"{key}: {value}")
+
+    # Get raw metadata for each spark app
+    allAppsMetadata = client.getAllAppMetadata(apps)
+
+    # Create Pandas DF from raw app metadata
+    metadataDf = client.buildMetadataDf(allAppsMetadata)
+
+    # Show Pandas DF
+    print(metadataDf)
