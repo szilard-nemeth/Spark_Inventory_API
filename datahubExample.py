@@ -38,11 +38,17 @@
 #***************************************************************************/
 
 from SparkHistoryClient import SparkHistoryClient
+from config import Config, ArgParse
 
-base_url = "https://spark-cluster-arm-gateway.pdf-jul2.a465-9q4k.cloudera.site/spark-cluster-arm/cdp-proxy/spark3history" # Obtain from DataHub Endpoints UI
-token = "" # Obtain from Knox Token Management UI
+DEFAULT_CONFIG = "config_datahub.ini"
+arg_parse = ArgParse(DEFAULT_CONFIG)
+args = arg_parse.do_parse()
+config = Config(filename=args.config)
 
-client = SparkHistoryClient(base_url, token, 15)
+client = SparkHistoryClient(config.base_url(),
+                            config.knox_token(allow_empty=not config.pass_token()),
+                            config.pass_token(),
+                            15)
 
 apps = client.list_applications(status="completed", limit=100)
 

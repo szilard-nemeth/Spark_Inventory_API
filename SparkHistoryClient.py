@@ -42,7 +42,7 @@ import pandas as pd
 from typing import Any, Dict, List, Optional
 
 class SparkHistoryClient:
-    def __init__(self, base_url: str, cdp_token: str, timeout: float = 10.0):
+    def __init__(self, base_url: str, cdp_token: str, pass_token, timeout: float = 10.0):
         """
         :param base_url: e.g. https://spark-cluster-arm-gateway.pdf-jul2.a465-9q4k.cloudera.site/spark-cluster-arm/cdp-proxy/spark3history
         :param timeout: HTTP timeout in seconds
@@ -51,12 +51,16 @@ class SparkHistoryClient:
         self.base_url = base_url
         self.timeout = timeout
         self.cdp_token = cdp_token
+        self._pass_token = pass_token
+        if not self._pass_token:
+            print("Not passing KNOX token as per configuration!")
 
     def _get(self, path: str, params: Optional[Dict[str, Any]] = None) -> Any:
-
-        cookies = {
-            'hadoop-jwt': self.cdp_token,
-        }
+        cookies = {}
+        if self._pass_token:
+            cookies = {
+                'hadoop-jwt': self.cdp_token,
+            }
 
         headers = {
             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',

@@ -39,13 +39,18 @@
 
 import os
 from SparkHistoryClient import SparkHistoryClient
+from config import Config, ArgParse
 
-# Set Environment variables
-base_url = "https://ares-base-es01.ares.olympus.cloudera.com:8443/gateway/cdp-proxy/spark3history/" # Obtain from DataHub Endpoints UI
-token = os.environ["KNOX_TOKEN"]
+DEFAULT_CONFIG = "config_base.ini"
+arg_parse = ArgParse(DEFAULT_CONFIG)
+args = arg_parse.do_parse()
+config = Config(filename=args.config)
 
 # Create Client
-client = SparkHistoryClient(base_url, token, 15)
+client = SparkHistoryClient(config.base_url(),
+                            config.knox_token(allow_empty=not config.pass_token()),
+                            config.pass_token(),
+                            15)
 
 # Get list of all spark apps
 apps = client.list_applications(status="completed", limit=100)
