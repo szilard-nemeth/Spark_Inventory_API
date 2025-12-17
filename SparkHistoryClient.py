@@ -1,4 +1,4 @@
-# ****************************************************************************
+#****************************************************************************
 # (C) Cloudera, Inc. 2020-2025
 #  All rights reserved.
 #
@@ -35,12 +35,11 @@
 #  DATA.
 #
 # #  Author(s): Paul de Fusco
-# ***************************************************************************/
+#***************************************************************************/
 
 import requests
 import pandas as pd
 from typing import Any, Dict, List, Optional
-
 
 class SparkHistoryClient:
     def __init__(self, base_url: str, cdp_token: str, pass_token, timeout: float = 10.0):
@@ -99,17 +98,19 @@ class SparkHistoryClient:
     def get_stages(self, app_id: str) -> List[Dict]:
         return self._get(f'/history/{app_id}/stages')
 
-    # def get_stage_attempt(self, app_id: str, stage_id: int, attempt_id: int) -> Dict:
+    #def get_stage_attempt(self, app_id: str, stage_id: int, attempt_id: int) -> Dict:
     #    return self._get(f'/applications/{app_id}/stages/{stage_id}/{attempt_id}')
 
     def get_executors(self, app_id: str) -> List[Dict]:
         return self._get(f'/applications/{app_id}/executors')
 
-    def get_environment(self, app_id: str, attemptId: str) -> Dict:
-        """
-        Retrieves Spark submit environment info, including Spark submit options.
-        """
-        return self._get(f"/applications/{app_id}/{attemptId}/environment")
+    def get_environment(self, app_id, attempt_id=None):
+        if attempt_id:
+            path = f"/applications/{app_id}/{attempt_id}/environment"
+        else:
+            path = f"/applications/{app_id}/environment"
+
+        return self._get(path)
 
     def get_environment_base(self, app_id: str) -> Dict:
         """

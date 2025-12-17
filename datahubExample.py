@@ -53,20 +53,24 @@ client = SparkHistoryClient(config.base_url(),
 apps = client.list_applications(status="completed", limit=100)
 
 for app in apps:
-    for attId in range(len(app['attempts'])):
-        print(f"{app['id']} - {app['name']} - {attId+1}")
+    appId = app['id']
+    print(f"\nSpark App ID: {appId}")
 
-if apps:
+    # Spark apps always have at least one attempt entry in the 'attempts' list
+    for attempt in app.get('attempts', []):
+        # Extract the actual attemptId from the metadata
+        # IMPORTANT: Do not default to "1" or an index if it's missing
+        actual_attempt_id = attempt.get('attemptId')
 
-    for app in apps:
-        appId = app['id']
-        print("\nSpark App ID: ", appId)
+        if actual_attempt_id:
+            print(f"Spark Attempt ID: {actual_attempt_id}")
+            env_info = client.get_environment(appId, actual_attempt_id)
+        else:
+            print("No specific Attempt ID found (using base application environment)")
+            # If your SparkHistoryClient.py allows it, pass None or handle the path change
+            # Most clients need a slight adjustment to handle the missing ID
+            env_info = client.get_environment(appId, None)
 
-        for attId in range(len(app['attempts'])):
-            print("\nSpark Attempt ID: ", attId)
-            env_info = client.get_environment(appId, attId+1)
-            spark_props = env_info.get("sparkProperties", [])
-
-            for prop in spark_props:
-                key, value = prop
-                print(f"{key}: {value}")
+        spark_props = env_info.get("sparkProperties", [])
+        for key, value in spark_props:
+            print(f"{key}: {value}")
