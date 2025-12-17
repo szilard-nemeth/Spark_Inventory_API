@@ -41,45 +41,50 @@ from SparkHistoryClient import SparkHistoryClient
 from config import Config, ArgParse
 
 DEFAULT_CONFIG = "config_datahub.ini"
-arg_parse = ArgParse(DEFAULT_CONFIG)
-args = arg_parse.do_parse()
-config = Config(filename=args.config)
 
-client = SparkHistoryClient(config.base_url(),
-                            config.knox_token(allow_empty=not config.pass_token()),
-                            config.pass_token(),
-                            15)
+def main():
+    arg_parse = ArgParse(DEFAULT_CONFIG)
+    args = arg_parse.do_parse()
+    config = Config(filename=args.config)
 
-apps = client.list_applications(status="completed", limit=100)
+    client = SparkHistoryClient(config.base_url(),
+                                config.knox_token(allow_empty=not config.pass_token()),
+                                config.pass_token(),
+                                15)
 
-for app in apps:
-    appId = app['id']
-    print(f"\nSpark App ID: {appId}")
+    apps = client.list_applications(status="completed", limit=100)
 
-    # Spark apps always have at least one attempt entry in the 'attempts' list
-    for attempt in app.get('attempts', []):
-        # Extract the actual attemptId from the metadata
-        # IMPORTANT: Do not default to "1" or an index if it's missing
-        actual_attempt_id = attempt.get('attemptId')
+    for app in apps:
+        appId = app['id']
+        print(f"\nSpark App ID: {appId}")
 
-        if actual_attempt_id:
-            print(f"Spark Attempt ID: {actual_attempt_id}")
-            env_info = client.get_environment(appId, actual_attempt_id)
-        else:
-            print("No specific Attempt ID found (using base application environment)")
-            # If your SparkHistoryClient.py allows it, pass None or handle the path change
-            # Most clients need a slight adjustment to handle the missing ID
-            env_info = client.get_environment(appId, None)
+        # Spark apps always have at least one attempt entry in the 'attempts' list
+        for attempt in app.get('attempts', []):
+            # Extract the actual attemptId from the metadata
+            # IMPORTANT: Do not default to "1" or an index if it's missing
+            actual_attempt_id = attempt.get('attemptId')
 
-        spark_props = env_info.get("sparkProperties", [])
-        for key, value in spark_props:
-            print(f"{key}: {value}")
+            if actual_attempt_id:
+                print(f"Spark Attempt ID: {actual_attempt_id}")
+                env_info = client.get_environment(appId, actual_attempt_id)
+            else:
+                print("No specific Attempt ID found (using base application environment)")
+                # If your SparkHistoryClient.py allows it, pass None or handle the path change
+                # Most clients need a slight adjustment to handle the missing ID
+                env_info = client.get_environment(appId, None)
 
-    # Get raw metadata for each spark app
-    allAppsMetadata = client.getAllAppMetadata(apps)
+            spark_props = env_info.get("sparkProperties", [])
+            for key, value in spark_props:
+                print(f"{key}: {value}")
 
-    # Create Pandas DF from raw app metadata
-    metadataDf = client.buildMetadataDf(allAppsMetadata)
+        # Get raw metadata for each spark app
+        allAppsMetadata = client.getAllAppMetadata(apps)
 
-    # Show Pandas DF
-    print(metadataDf)
+        # Create Pandas DF from raw app metadata
+        metadataDf = client.buildMetadataDf(allAppsMetadata)
+
+        # Show Pandas DF
+        print(metadataDf)
+
+if __name__ == '__main__':
+    main()
