@@ -2,6 +2,8 @@ import argparse
 import configparser
 import os
 from collections.abc import Callable
+from typing import List
+
 
 class ArgParse:
     def __init__(self, default_config):
@@ -14,6 +16,14 @@ class ArgParse:
             help="Path to the configuration file (e.g., my_config.ini)"
         )
 
+        self.parser.add_argument(
+            "--print",
+            nargs='+',
+            choices=['printenv', 'printmeta', 'printall'],
+            default=['printenv'],
+            help="Specify which information to print. Multiple values can be provided."
+        )
+
     def do_parse(self):
         # 2. Parse the arguments
         args = self.parser.parse_args()
@@ -21,9 +31,10 @@ class ArgParse:
 
 
 class Config:
-    def __init__(self, filename="config.ini"):
+    def __init__(self, filename="config.ini", print_flags=None):
         self.config = configparser.ConfigParser()
         self.config.read(filename)
+        self.print_flags: List[str] = [] if print_flags else print_flags
 
     def base_url(self, allow_empty=False):
         return self.ensure_config(key='BASE_URL', allow_empty=allow_empty)
