@@ -119,10 +119,17 @@ def _print_all(appId, client: SparkHistoryClient):
         # Note: stage['attemptId'] refers to the retry attempt of this specific stage
         stg_attempt_id = stage['attemptId']
 
-        # Get Task Summary (Aggregated metrics like min, max, quartiles)
-        task_summary = client.get_task_summary(appId, stage_id, stg_attempt_id)
-        print(f"--- Stage {stage_id} (Attempt {stg_attempt_id}) Summary ---")
-        print(task_summary)
+        # Check if the stage actually ran tasks
+        # Spark returns 404 on taskSummary if no tasks have finished
+        if stage.get('numCompleteTasks', 0) > 0:
+            try:
+                task_summary = client.get_task_summary(appId, stage_id, stg_attempt_id)
+                print(f"--- Stage {stage_id} Summary ---")
+                print(task_summary)
+            except Exception as e:
+                print(f"Skipping summary for Stage {stage_id}: {e}")
+        else:
+            print(f"Stage {stage_id} has no completed tasks; skipping summary.")
 
         # Get Task List (Individual data for every task in this stage)
         task_list = client.get_task_list(appId, stage_id, stg_attempt_id)
