@@ -32,9 +32,11 @@ class ArgParse:
 
 class Config:
     def __init__(self, filename="config.ini", print_flags=None):
+        if not print_flags:
+            raise ValueError(f"Invalid print_flags: {print_flags}")
         self.config = configparser.ConfigParser()
         self.config.read(filename)
-        self.print_flags: List[str] = [] if print_flags else print_flags
+        self.print_flags: List[str] = print_flags
 
     def base_url(self, allow_empty=False):
         return self.ensure_config(key='BASE_URL', allow_empty=allow_empty)
