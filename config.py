@@ -24,6 +24,12 @@ class ArgParse:
             help="Specify which information to print. Multiple values can be provided."
         )
 
+        self.parser.add_argument(
+            "--format-json",
+            action="store_true",
+            help="Enable formatted JSON printouts."
+        )
+
     def do_parse(self):
         # 2. Parse the arguments
         args = self.parser.parse_args()
@@ -31,12 +37,13 @@ class ArgParse:
 
 
 class Config:
-    def __init__(self, filename="config.ini", print_flags=None):
+    def __init__(self, filename="config.ini", print_flags=None, format_json=False):
         if not print_flags:
             raise ValueError(f"Invalid print_flags: {print_flags}")
         self.config = configparser.ConfigParser()
         self.config.read(filename)
         self.print_flags: List[str] = print_flags
+        self.format_json = format_json
 
     def base_url(self, allow_empty=False):
         return self.ensure_config(key='BASE_URL', allow_empty=allow_empty)

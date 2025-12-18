@@ -47,7 +47,7 @@ def main():
     arg_parse = ArgParse(DEFAULT_CONFIG)
     args = arg_parse.do_parse()
     # print(args.print)
-    config = Config(filename=args.config, print_flags=args.print)
+    config = Config(filename=args.config, print_flags=args.print, format_json=args.format_json)
     print(f"Config: {config.__dict__}")
 
     client = SparkHistoryClient(config.base_url(),
