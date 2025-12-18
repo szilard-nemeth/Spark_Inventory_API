@@ -45,7 +45,9 @@ DEFAULT_CONFIG = "config_datahub.ini"
 def main():
     arg_parse = ArgParse(DEFAULT_CONFIG)
     args = arg_parse.do_parse()
-    config = Config(filename=args.config)
+    # print(args.print)
+    config = Config(filename=args.config, print_flags=args.print)
+    print(f"Config: {config.__dict__}")
 
     client = SparkHistoryClient(config.base_url(),
                                 config.knox_token(allow_empty=not config.pass_token()),
@@ -53,6 +55,9 @@ def main():
                                 15)
 
     apps = client.list_applications(status="completed", limit=100)
+
+    if "printall" in config.print_flags:
+        print(f"Apps: {apps}")
 
     for app in apps:
         appId = app['id']
@@ -63,9 +68,13 @@ def main():
             # Extract the actual attemptId from the metadata
             # IMPORTANT: Do not default to "1" or an index if it's missing
             actual_attempt_id = attempt.get('attemptId')
-            _print_env_info(client, appId, actual_attempt_id)
+            if "printenv" in config.print_flags:
+                _print_env_info(client, appId, actual_attempt_id)
+            if "printall" in config.print_flags:
+                _print_all(appId, client)
 
-        _print_app_metadata(apps, client)
+        if "printmeta" in config.print_flags:
+            _print_app_metadata(apps, client)
 
 
 def _print_env_info(client: SparkHistoryClient, appId, attempt_id):
@@ -92,6 +101,34 @@ def _print_app_metadata(apps: list[dict], client: SparkHistoryClient):
 
     # Show Pandas DF
     print(metadataDf)
+
+
+def _print_all(appId, client: SparkHistoryClient):
+    jobs = client.get_jobs(appId)
+    print(f"jobs: {jobs}")
+
+    stages = client.get_stages(appId)
+    print(f"stages: {stages}")
+
+    executors = client.get_executors(appId)
+    print(f"executors: {executors}")
+
+    # Iterate through each stage to get summaries and task details
+    for stage in stages:
+        stage_id = stage['stageId']
+        # Note: stage['attemptId'] refers to the retry attempt of this specific stage
+        stg_attempt_id = stage['attemptId']
+
+        # Get Task Summary (Aggregated metrics like min, max, quartiles)
+        task_summary = client.get_task_summary(appId, stage_id, stg_attempt_id)
+        print(f"--- Stage {stage_id} (Attempt {stg_attempt_id}) Summary ---")
+        print(task_summary)
+
+        # Get Task List (Individual data for every task in this stage)
+        task_list = client.get_task_list(appId, stage_id, stg_attempt_id)
+        print(f"--- Stage {stage_id} Task List ---")
+        for task in task_list:
+            print(f"Task ID: {task['taskId']} status: {task['status']}")
 
 
 if __name__ == '__main__':
