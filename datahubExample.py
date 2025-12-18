@@ -36,6 +36,7 @@
 #
 # #  Author(s): Paul de Fusco
 #***************************************************************************/
+import json
 
 from SparkHistoryClient import SparkHistoryClient
 from config import Config, ArgParse
@@ -57,7 +58,7 @@ def main():
     apps = client.list_applications(status="completed", limit=100)
 
     if "printall" in config.print_flags:
-        print(f"Apps: {apps}")
+        print(f"Apps: {_to_json(apps)}")
 
     for app in apps:
         appId = app['id']
@@ -105,13 +106,13 @@ def _print_app_metadata(apps: list[dict], client: SparkHistoryClient):
 
 def _print_all(appId, client: SparkHistoryClient):
     jobs = client.get_jobs(appId)
-    print(f"jobs: {jobs}")
+    print(f"jobs: {_to_json(jobs)}")
 
     stages = client.get_stages(appId)
-    print(f"stages: {stages}")
+    print(f"stages: {_to_json(stages)}")
 
     executors = client.get_executors(appId)
-    print(f"executors: {executors}")
+    print(f"executors: {_to_json(executors)}")
 
     # Iterate through each stage to get summaries and task details
     for stage in stages:
@@ -125,7 +126,7 @@ def _print_all(appId, client: SparkHistoryClient):
             try:
                 task_summary = client.get_task_summary(appId, stage_id, stg_attempt_id)
                 print(f"--- Stage {stage_id} Summary ---")
-                print(task_summary)
+                print(_to_json(task_summary))
             except Exception as e:
                 print(f"Skipping summary for Stage {stage_id}: {e}")
         else:
@@ -136,6 +137,9 @@ def _print_all(appId, client: SparkHistoryClient):
         print(f"--- Stage {stage_id} Task List ---")
         for task in task_list:
             print(f"Task ID: {task['taskId']} status: {task['status']}")
+
+def _to_json(s):
+    return json.dumps(s)
 
 
 if __name__ == '__main__':
