@@ -93,10 +93,10 @@ class SparkHistoryClient:
         return self._get('/applications', params)
 
     def get_jobs(self, app_id: str) -> List[Dict]:
-        return self._get(f'/history/{app_id}/jobs')
+        return self._get(f'/applications/{app_id}/jobs')
 
     def get_stages(self, app_id: str) -> List[Dict]:
-        return self._get(f'/history/{app_id}/stages')
+        return self._get(f'/applications/{app_id}/stages')
 
     #def get_stage_attempt(self, app_id: str, stage_id: int, attempt_id: int) -> Dict:
     #    return self._get(f'/applications/{app_id}/stages/{stage_id}/{attempt_id}')
