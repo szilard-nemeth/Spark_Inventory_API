@@ -68,6 +68,7 @@ class SparkHistoryClient:
         }
 
         url = f"{self.base_url}/api/v1{path}"
+        print("SHS url: " + url)
         resp = requests.get(url, params=params, timeout=self.timeout, headers=headers, cookies=cookies)
         resp.raise_for_status()
         return resp.json()
