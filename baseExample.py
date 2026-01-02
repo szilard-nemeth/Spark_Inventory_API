@@ -37,32 +37,27 @@
 # #  Author(s): Paul de Fusco
 #***************************************************************************/
 
-import os
 from SparkHistoryClient import SparkHistoryClient
 from config import Config, ArgParse
+from datahubExample import ApplicationDataPrinter
 
 DEFAULT_CONFIG = "config_base.ini"
-arg_parse = ArgParse(DEFAULT_CONFIG)
-args = arg_parse.do_parse()
-config = Config(filename=args.config)
 
-# Create Client
-client = SparkHistoryClient(config.base_url(),
-                            config.knox_token(allow_empty=not config.pass_token()),
-                            config.pass_token(),
-                            15)
 
-# Get list of all spark apps
-apps = client.list_applications(status="completed", limit=100)
+def main():
+    arg_parse = ArgParse(DEFAULT_CONFIG)
+    args = arg_parse.do_parse()
+    # print(args.print)
+    config = Config(filename=args.config, print_flags=args.print, export_dfs_to_xls=args.export_dfs_to_xls, format_json=args.format_json)
+    print(f"Config: {config.__dict__}")
 
-# Get raw metadata for each spark app
-allAppsMetadata = client.getAllAppMetadata(apps)
+    client = SparkHistoryClient(config.base_url(),
+                                config.knox_token(allow_empty=not config.pass_token()),
+                                config.pass_token(),
+                                15)
+    printer = ApplicationDataPrinter(config, client)
+    printer.print()
 
-# Create Pandas DF from raw app metadata
-metadataDf = client.buildMetadataDf(allAppsMetadata)
 
-# Show Pandas DF
-metadataDf
-
-# Create Excel File
-metadataDf.to_excel("/home/cdsw/spark_app_summary.xlsx", index=False)
+if __name__ == '__main__':
+    main()

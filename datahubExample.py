@@ -96,6 +96,8 @@ class ApplicationDataPrinter:
         # Show Pandas DF
         print(metadataDf)
 
+        if self._config.export_dfs_to_xls:
+            metadataDf.to_excel("/home/cdsw/spark_app_summary.xlsx", index=False)
 
     def _print_all(self, appId):
         jobs = self._client.get_jobs(appId)
@@ -140,7 +142,7 @@ def main():
     arg_parse = ArgParse(DEFAULT_CONFIG)
     args = arg_parse.do_parse()
     # print(args.print)
-    config = Config(filename=args.config, print_flags=args.print, format_json=args.format_json)
+    config = Config(filename=args.config, print_flags=args.print, export_dfs_to_xls=args.export_dfs_to_xls, format_json=args.format_json)
     print(f"Config: {config.__dict__}")
 
     client = SparkHistoryClient(config.base_url(),

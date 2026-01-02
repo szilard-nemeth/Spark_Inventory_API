@@ -25,6 +25,13 @@ class ArgParse:
         )
 
         self.parser.add_argument(
+            "--export-df-to-xls",
+            action="store_true",
+            default=False,
+            help="Whether to export Pandas DF to xls."
+        )
+
+        self.parser.add_argument(
             "--format-json",
             action="store_true",
             help="Enable formatted JSON printouts."
@@ -37,13 +44,14 @@ class ArgParse:
 
 
 class Config:
-    def __init__(self, filename="config.ini", print_flags=None, format_json=False):
+    def __init__(self, filename="config.ini", print_flags: List[str] = None, export_dfs_to_xls: bool = False, format_json=False):
         if not print_flags:
             raise ValueError(f"Invalid print_flags: {print_flags}")
         self.config = configparser.ConfigParser()
         self.config.read(filename)
         self.print_flags: List[str] = print_flags
         self.format_json = format_json
+        self.export_dfs_to_xls = export_dfs_to_xls
 
     def base_url(self, allow_empty=False):
         return self.ensure_config(key='BASE_URL', allow_empty=allow_empty)
