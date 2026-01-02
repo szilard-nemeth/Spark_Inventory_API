@@ -38,8 +38,7 @@
 #***************************************************************************/
 
 from SparkHistoryClient import SparkHistoryClient
-from config import Config, ArgParse
-from datahubExample import ApplicationDataPrinter
+from common import Config, ArgParse, ApplicationDataPrinter
 
 DEFAULT_CONFIG = "config_base.ini"
 
