@@ -37,26 +37,8 @@
 # #  Author(s): Paul de Fusco
 #***************************************************************************/
 
-from SparkHistoryClient import SparkHistoryClient
-from common import Config, ArgParse, ApplicationDataPrinter
-
-DEFAULT_CONFIG = "config_datahub.ini"
-
-
-def main():
-    arg_parse = ArgParse(DEFAULT_CONFIG)
-    args = arg_parse.do_parse()
-    # print(args.print)
-    config = Config(filename=args.config, print_flags=args.print, export_dfs_to_xls=args.export_dfs_to_xls, format_json=args.format_json)
-    print(f"Config: {config.__dict__}")
-
-    client = SparkHistoryClient(config.base_url(),
-                                config.knox_token(allow_empty=not config.pass_token()),
-                                config.pass_token(),
-                                15)
-    printer = ApplicationDataPrinter(config, client)
-    printer.print()
+from common import Launcher
 
 
 if __name__ == '__main__':
-    main()
+    Launcher.launch("config_datahub.ini")

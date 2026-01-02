@@ -5,6 +5,24 @@ import os
 from collections.abc import Callable
 from typing import List
 
+from SparkHistoryClient import SparkHistoryClient
+
+
+class Launcher:
+    @staticmethod
+    def launch(config_file: str):
+        arg_parse = ArgParse(config_file)
+        args = arg_parse.do_parse()
+        config = Config(filename=args.config, print_flags=args.print, export_dfs_to_xls=args.export_dfs_to_xls, format_json=args.format_json)
+        print(f"Config: {config.__dict__}")
+
+        client = SparkHistoryClient(config.base_url(),
+                                    config.knox_token(allow_empty=not config.pass_token()),
+                                    config.pass_token(),
+                                    15)
+        printer = ApplicationDataPrinter(config, client)
+        printer.print()
+
 
 class ArgParse:
     def __init__(self, default_config):
