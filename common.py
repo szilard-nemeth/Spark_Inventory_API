@@ -13,7 +13,7 @@ class Launcher:
     def launch(config_file: str):
         arg_parse = ArgParse(config_file)
         args = arg_parse.do_parse()
-        config = Config(filename=args.config, print_flags=args.print, export_dfs_to_xls=args.export_dfs_to_xls, format_json=args.format_json)
+        config = Config(filename=args.config, print_flags=args.print, export_df_to_xls=args.export_df_to_xls, format_json=args.format_json)
         print(f"Config: {config.__dict__}")
 
         client = SparkHistoryClient(config.base_url(),
@@ -63,14 +63,14 @@ class ArgParse:
 
 
 class Config:
-    def __init__(self, filename="config.ini", print_flags: List[str] = None, export_dfs_to_xls: bool = False, format_json=False):
+    def __init__(self, filename="config.ini", print_flags: List[str] = None, export_df_to_xls: bool = False, format_json=False):
         if not print_flags:
             raise ValueError(f"Invalid print_flags: {print_flags}")
         self.config = configparser.ConfigParser()
         self.config.read(filename)
         self.print_flags: List[str] = print_flags
         self.format_json = format_json
-        self.export_dfs_to_xls = export_dfs_to_xls
+        self.export_df_to_xls = export_df_to_xls
 
     def base_url(self, allow_empty=False):
         return self.ensure_config(key='BASE_URL', allow_empty=allow_empty)
@@ -171,7 +171,7 @@ class ApplicationDataPrinter:
         # Show Pandas DF
         print(metadataDf)
 
-        if self._config.export_dfs_to_xls:
+        if self._config.export_df_to_xls:
             metadataDf.to_excel("/home/cdsw/spark_app_summary.xlsx", index=False)
 
     def _print_all(self, appId):
